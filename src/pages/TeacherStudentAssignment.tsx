@@ -119,7 +119,7 @@ const TeacherStudentAssignment = () => {
 
     try {
       // Fix: Add complete ID to URL and ensure proper data format in the body
-      const response = await fetch(`https://localhost:44361/api/activities/${activities[0].activityId}`, {
+      const response = await fetch(`https://localhost:44361/api/classgroupsubjectstudentactivities/${activities[0].activityId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
