@@ -1,6 +1,5 @@
-
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
   Calendar, 
@@ -27,6 +26,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
 import { Skeleton } from '@/components/ui/skeleton';
 import { 
   Pagination, 
@@ -47,33 +48,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { activitystudentClassGroupService } from './classGroupActivityStudentService';
+import { classGroupActivityService } from './ClassGroupActivityService';
 
-interface Student {
-  id: string;
-  name: string;
-}
-
-// Interface that matches the API response structure
-interface ActivityData {
-  activityId: string;
-  studentId: string;
-  studentUsername: string;
-  activityActivityName: string;
-  classGroupSubjectClassGroupClassName: string;
-  status?: string; // Added by our service for UI purposes
-}
-
-const ClassGroupSubjectStudentActivity = () => {
+const ClassGroupSubjectActivity = () => {
   const navigate = useNavigate();
-  const [activities, setActivities] = useState<ActivityData[]>([]);
-  const { activityId } = useParams<{ activityId: string }>();
-  const [filteredActivities, setFilteredActivities] = useState<ActivityData[]>([]);
+  const [activities, setActivities] = useState<any[]>([]);
+  const [filteredActivities, setFilteredActivities] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [classFilter, setClassFilter] = useState('all');
-  const [studentFilter, setStudentFilter] = useState('all');
+  const [subjectFilter, setSubjectFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [students, setStudents] = useState<Student[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 5;
@@ -82,24 +66,11 @@ const ClassGroupSubjectStudentActivity = () => {
     const fetchActivities = async () => {
       setLoading(true);
       try {
-        const data = await activitystudentClassGroupService.getClassGroupActivities(activityId);
+        const data = await classGroupActivityService.getClassGroupActivities();
         console.log("The data from classGroupActivityService is:", data);
         
         setActivities(data);
         setFilteredActivities(data);
-        
-        // Extract unique students from activities based on new data structure
-        const uniqueStudents = Array.from(
-          new Set(
-            data.map(activity => ({
-              id: activity.studentId,
-              name: activity.studentUsername
-            }))
-          ),
-          student => JSON.stringify(student)
-        ).map(str => JSON.parse(str));
-        
-        setStudents(uniqueStudents);
       } catch (error) {
         console.error("Failed to fetch activities:", error);
         toast.error("Failed to load activities");
@@ -116,20 +87,26 @@ const ClassGroupSubjectStudentActivity = () => {
 
     if (searchQuery) {
       result = result.filter(activity => 
-        (activity.activityActivityName?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
-        (activity.studentUsername?.toLowerCase().includes(searchQuery.toLowerCase()) || '')
+        (activity.title?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+        (activity.studentName?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+        (activity.userName?.toLowerCase().includes(searchQuery.toLowerCase()) || '') ||
+        (activity.description?.toLowerCase().includes(searchQuery.toLowerCase()) || '')
       );
     }
 
     if (classFilter !== 'all') {
       result = result.filter(activity => 
-        activity.classGroupSubjectClassGroupClassName === classFilter
+        activity.class === classFilter || 
+        activity.className === classFilter || 
+        activity.classGroup?.className === classFilter
       );
     }
 
-    if (studentFilter !== 'all') {
+    if (subjectFilter !== 'all') {
       result = result.filter(activity => 
-        activity.studentId === studentFilter
+        activity.subject === subjectFilter ||
+        activity.subjectName === subjectFilter ||
+        activity.subjectId === subjectFilter
       );
     }
 
@@ -139,12 +116,16 @@ const ClassGroupSubjectStudentActivity = () => {
 
     setFilteredActivities(result);
     setCurrentPage(1);
-  }, [activities, searchQuery, classFilter, statusFilter, studentFilter]);
+  }, [activities, searchQuery, classFilter, subjectFilter, statusFilter]);
 
-  // Extract unique class names from the new data structure
-  const classes = ['all', ...new Set(activities.map(activity => 
-    activity.classGroupSubjectClassGroupClassName
-  ).filter(Boolean))];
+  const classes = ['all', ...new Set(activities
+    .map(activity => activity.class || activity.className || 
+    (activity.classGroup && activity.classGroup.className) || 'Unknown')
+    .filter(Boolean))];
+  
+  const subjects = ['all', ...new Set(activities
+    .map(activity => activity.subject || activity.subjectName || 'Unknown')
+    .filter(Boolean))];
 
   const totalPages = Math.ceil(filteredActivities.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -159,6 +140,7 @@ const ClassGroupSubjectStudentActivity = () => {
             <Skeleton className="h-6 w-24" />
           </div>
           <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-4 w-1/4" />
             <Skeleton className="h-4 w-1/4" />
             <Skeleton className="h-4 w-1/4" />
           </div>
@@ -206,14 +188,54 @@ const ClassGroupSubjectStudentActivity = () => {
           </Badge>
         );
       default:
-        return <Badge variant="outline">{status || 'Unknown'}</Badge>;
+        return <Badge variant="outline">{status}</Badge>;
     }
   };
 
-  const handleDeleteActivity = async (activityId: string, e: React.MouseEvent) => {
+  const formatDate = (dateString: string) => {
+    if (!dateString || dateString === 'Invalid Date') return 'Invalid Date';
+    
+    try {
+      const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+      return new Date(dateString).toLocaleDateString('en-US', options);
+    } catch (error) {
+      console.error("Invalid date format:", error);
+      return 'Invalid Date';
+    }
+  };
+
+  const getValue = (activity: any, keys: string[], defaultValue: string = 'N/A') => {
+    for (const key of keys) {
+      if (key.includes('.')) {
+        const parts = key.split('.');
+        let value = activity;
+        let valid = true;
+        
+        for (const part of parts) {
+          if (value && value[part] !== undefined) {
+            value = value[part];
+          } else {
+            valid = false;
+            break;
+          }
+        }
+        
+        if (valid && value !== null && value !== undefined) {
+          return value;
+        }
+      } 
+      else if (activity[key] !== undefined && activity[key] !== null) {
+        return activity[key];
+      }
+    }
+    return defaultValue;
+  };
+
+  const handleDeleteActivity = async (activityId: any, e: React.MouseEvent) => {
     e.stopPropagation();
     try {
       setActivities(activities.filter(activity => 
+        activity.id !== activityId && 
         activity.activityId !== activityId
       ));
       toast.success("Activity deleted successfully");
@@ -225,11 +247,7 @@ const ClassGroupSubjectStudentActivity = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <div className="bg-primary text-white p-4">
-        <div className="container mx-auto">
-          <h1 className="text-2xl font-bold">School Management System</h1>
-        </div>
-      </div>
+      <Header isLoggedIn={true} userType="teacher" userName="Teacher" />
       
       <main className="flex-1 py-8">
         <div className="container px-4 md:px-6 max-w-7xl mx-auto">
@@ -238,20 +256,20 @@ const ClassGroupSubjectStudentActivity = () => {
               <div>
                 <h1 className="text-3xl font-bold flex items-center gap-2">
                   <Users className="h-7 w-7 text-primary" />
-                  Student Activities
+                  Class Group Activities
                 </h1>
                 <p className="text-muted-foreground mt-1">
-                  Manage student activities across different classes
+                  Manage student activities across different classes and subjects
                 </p>
               </div>
               <div className="flex items-center gap-4">
-                <Button className="gap-1" onClick={() => navigate('/create-activity')}>
+                <Button className="gap-1">
                   <Plus className="h-4 w-4" />
                   Create Activity
                 </Button>
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4 mr-1" />
-                  Saturday, April 12, 2025
+                  Saturday, April 5, 2025
                 </div>
               </div>
             </div>
@@ -261,28 +279,13 @@ const ClassGroupSubjectStudentActivity = () => {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Search by student name, activity name..."
+                    placeholder="Search by student name, title..."
                     className="pl-10"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
                 <div className="flex flex-wrap gap-3">
-                  <Select value={studentFilter} onValueChange={setStudentFilter}>
-                    <SelectTrigger className="w-[180px]">
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-2" />
-                        <span>{studentFilter === 'all' ? 'All Students' : students.find(s => s.id === studentFilter)?.name || 'Unknown'}</span>
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem key="all-students" value="all">All Students</SelectItem>
-                      {students.map(student => (
-                        <SelectItem key={`student-${student.id}`} value={student.id}>{student.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  
                   <Select value={classFilter} onValueChange={setClassFilter}>
                     <SelectTrigger className="w-[180px]">
                       <div className="flex items-center">
@@ -297,7 +300,20 @@ const ClassGroupSubjectStudentActivity = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  
+                  <Select value={subjectFilter} onValueChange={setSubjectFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <div className="flex items-center">
+                        <Filter className="h-4 w-4 mr-2" />
+                        <span>{subjectFilter === 'all' ? 'All Subjects' : subjectFilter}</span>
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem key="all-subjects" value="all">All Subjects</SelectItem>
+                      {subjects.filter(s => s !== 'all').map(subject => (
+                        <SelectItem key={`subject-${subject}`} value={subject}>{subject}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <Select value={statusFilter} onValueChange={setStatusFilter}>
                     <SelectTrigger className="w-[180px]">
                       <div className="flex items-center">
@@ -320,80 +336,101 @@ const ClassGroupSubjectStudentActivity = () => {
                 {loading ? (
                   renderSkeleton()
                 ) : paginatedActivities.length > 0 ? (
-                  paginatedActivities.map((activity, index) => (
-                    <Card
-                      key={`activity-${activity.activityId}-${activity.studentId}-${index}`}
-                      className="hover:border-primary/40 transition-all duration-300 cursor-pointer"
-                      onClick={() => navigate(`/teacherstudentassignment/${activity.activityId}`)}
-                    >
-                      <CardContent className="p-6">
-                        <div className="flex flex-col">
-                          <div className="flex items-start justify-between">
-                            <h3 className="font-semibold text-lg">{activity.activityActivityName}</h3>
-                            {getStatusBadge(activity.status || 'Pending')}
-                          </div>
-                          <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground mt-2">
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium">Student:</span> 
-                              <span>{activity.studentUsername}</span>
+                  paginatedActivities.map((activity, index) => {
+                    const id = getValue(activity, ['id', 'activityId', 'classGroupSubjectActivityId'], index.toString());
+                    const activityId = getValue(activity, ['activityId', 'id', 'classGroupSubjectActivityId']);
+                    const title = getValue(activity, ['title', 'activity.title', 'activityName']);
+                    const studentName = getValue(activity, ['studentName', 'userName', 'student.userName', 'activity.studentName']);
+                    const className = getValue(activity, ['class', 'className', 'classGroup.className', 'activity.classGroup.className']);
+                    const subject = getValue(activity, ['subject', 'subjectName', 'activity.subject']);
+                    const description = getValue(activity, ['description', 'activity.description']);
+                    const dueDate = getValue(activity, ['dueDate', 'activity.dueDate', 'deadline']);
+                    const status = getValue(activity, ['status'], 'Pending');
+                    
+                    return (
+                      <Card
+                        key={`activity-${id}-${index}`}
+                        className="hover:border-primary/40 transition-all duration-300 cursor-pointer"
+                        onClick={() => navigate(`/classgroupsubjectsactivitytudentview/${activityId}`)}
+                      >
+                        <CardContent className="p-6">
+                          <div className="flex flex-col">
+                            <div className="flex items-start justify-between">
+                              <h3 className="font-semibold text-lg">{title}</h3>
+                              {getStatusBadge(status)}
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span className="font-medium">Class:</span> 
-                              <span>{activity.classGroupSubjectClassGroupClassName}</span>
+                            <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground mt-2">
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Student:</span> 
+                                <span>{studentName}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Class:</span> 
+                                <span>{className}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="font-medium">Subject:</span> 
+                                <span>{subject}</span>
+                              </div>
                             </div>
-                          </div>
-                          <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between mt-4 pt-2 border-t">
-                            <div className="flex items-center gap-2">
-                              <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="text-destructive"
-                                    onClick={(e) => e.stopPropagation()}
-                                  >
-                                    <Trash2 className="h-4 w-4" />
-                                  </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                    <AlertDialogTitle>Delete activity?</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                      This action cannot be undone. This will permanently delete this 
-                                      activity and remove it from our servers.
-                                    </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                    <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
-                                      Cancel
-                                    </AlertDialogCancel>
-                                    <AlertDialogAction 
-                                      onClick={(e) => handleDeleteActivity(activity.activityId, e)}
-                                      className="bg-destructive text-destructive-foreground"
+                            <p className="mt-2 line-clamp-2 text-sm">{description}</p>
+                            <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between mt-4 pt-2 border-t">
+                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                <Clock className="h-3.5 w-3.5" />
+                                <span>Due: {formatDate(dueDate)}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-destructive"
+                                      onClick={(e) => e.stopPropagation()}
                                     >
-                                      Delete
-                                    </AlertDialogAction>
-                                  </AlertDialogFooter>
-                                </AlertDialogContent>
-                              </AlertDialog>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-primary"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  navigate(`/teacherstudentassignment/${activity.activityId}`);
-                                }}
-                              >
-                                View Details
-                                <ChevronRight className="h-4 w-4 ml-1" />
-                              </Button>
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Delete activity?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        This action cannot be undone. This will permanently delete this 
+                                        activity and remove it from our servers.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel onClick={(e) => e.stopPropagation()}>
+                                        Cancel
+                                      </AlertDialogCancel>
+                                      <AlertDialogAction 
+                                        onClick={(e) => handleDeleteActivity(id, e)}
+                                        className="bg-destructive text-destructive-foreground"
+                                      >
+                                        Delete
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-primary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    navigate(`/classgroupsubjectsactivitytudentview/${activityId}`);
+                                  }}
+                                >
+                                  View Details
+                                  <ChevronRight className="h-4 w-4 ml-1" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))
+                        </CardContent>
+                      </Card>
+                    );
+                  })
                 ) : (
                   <div className="text-center py-12 border rounded-lg">
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
@@ -444,13 +481,9 @@ const ClassGroupSubjectStudentActivity = () => {
         </div>
       </main>
       
-      <div className="bg-muted py-6">
-        <div className="container mx-auto text-center text-sm text-muted-foreground">
-          <p>© 2025 School Management System. All rights reserved.</p>
-        </div>
-      </div>
+      <Footer />
     </div>
   );
 };
 
-export default ClassGroupSubjectStudentActivity;
+export default ClassGroupSubjectActivity;

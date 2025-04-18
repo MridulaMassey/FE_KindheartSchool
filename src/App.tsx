@@ -23,6 +23,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import Rewards from "./pages/Rewards";
 import About from "./pages/About";
 import ClassGroupSubjectStudentActivity from "./pages/ClassGroupSubjectStudentActivity";
+import TeacherStudentAssignment from "./pages/TeacherStudentAssignment";
+import ClassGroupSubjectActivity from "./pages/ClassGroupSubjectActivity";
 
 
 const queryClient = new QueryClient();
@@ -53,11 +55,14 @@ const App = () => (
           <Route path="/games" element={<Games />} />
           <Route path="/activities/create" element={<CreateActivity />} /> 
           <Route path="/activitiespagination" element={<ActivitiesPaginated/>} /> 
+          <Route path="/classgroupsubject" element={<ClassGroupSubjectActivity />} />
           <Route path="/myclasses" element={<MyClasses />} />
           <Route path="/about" element={<About />} />
           <Route path="/upcomingtask" element={<UpcomingTask />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          
           <Route path="/rewards" element={<Rewards />} />
+          <Route path="/teacherstudentassignment/:activityId" element={<TeacherStudentAssignment/>} />
           <Route path="/classgroupsubjectsactivitytudentview/:activityId" element={<ClassGroupSubjectStudentActivity/>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="/studentassignmentdetails/:activityId" element={<StudentAssignmentDetails />} />
