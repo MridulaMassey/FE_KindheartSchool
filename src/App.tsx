@@ -25,6 +25,7 @@ import About from "./pages/About";
 import ClassGroupSubjectStudentActivity from "./pages/ClassGroupSubjectStudentActivity";
 import TeacherStudentAssignment from "./pages/TeacherStudentAssignment";
 import ClassGroupSubjectActivity from "./pages/ClassGroupSubjectActivity";
+import TeacherAssignmentDetails from "./pages/TeacherAssignmentDetails";
 
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           
           <Route path="/rewards" element={<Rewards />} />
+          <Route path="/teacherassignmentdetails/:activityId" element={<TeacherAssignmentDetails />} />
           <Route path="/teacherstudentassignment/:activityId" element={<TeacherStudentAssignment/>} />
           <Route path="/classgroupsubjectsactivitytudentview/:activityId" element={<ClassGroupSubjectStudentActivity/>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
