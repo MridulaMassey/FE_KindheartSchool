@@ -22,6 +22,7 @@ import UpcomingTask from "./pages/UpcomingTask";
 import AdminDashboard from "./pages/AdminDashboard";
 import Rewards from "./pages/Rewards";
 import About from "./pages/About";
+import ClassGroupSubjectStudentActivity from "./pages/ClassGroupSubjectStudentActivity";
 
 
 const queryClient = new QueryClient();
@@ -57,7 +58,7 @@ const App = () => (
           <Route path="/upcomingtask" element={<UpcomingTask />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/rewards" element={<Rewards />} />
-          
+          <Route path="/classgroupsubjectsactivitytudentview/:activityId" element={<ClassGroupSubjectStudentActivity/>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="/studentassignmentdetails/:activityId" element={<StudentAssignmentDetails />} />
           <Route path="*" element={<NotFound />} />
