@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import { toast } from "@/hooks/use-toast";
 
 interface Activity {
   activityId: string;
@@ -108,50 +109,60 @@ const StudentActivities: React.FC = () => {
     formData.append("file", file);
   
     try {
+      // Upload file
+      const formData = new FormData();
+      formData.append("file", file);
       const fileRes = await fetch("https://localhost:44361/api/upload", {
         method: "POST",
         body: formData
       });
   
+      if (!fileRes.ok) throw new Error("File upload failed");
       const { downloadUrl } = await fileRes.json();
-      const fileUrl = downloadUrl;
   
+      // Get student ID
       const response = await fetch(`https://localhost:44361/api/Student/get-student-id/${username}`);
-      const data = await response.json();
-      const studentId = data.studentId;  
+      if (!response.ok) throw new Error("Failed to get student ID");
+      const { studentId } = await response.json();
   
-      const payload = {
-        activityId: selectedActivity.activityId,
-        studentId,
-        pdfUrl: fileUrl,
-        studentComment: studentcomment
-      };
-  
+      // Submit activity
       const endpoint = isResubmitting
         ? "https://localhost:44361/api/Submissions/resubmit"
         : "https://localhost:44361/api/Submissions/submit";
   
-      await fetch(endpoint, {
+      const submitRes = await fetch(endpoint, {
         method: isResubmitting ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          activityId: selectedActivity.activityId,
+          studentId,
+          pdfUrl: downloadUrl,
+          studentComment: studentcomment
+        })
       });
   
-      alert(isResubmitting ? "Resubmitted successfully!" : "Submitted successfully!");
+      if (!submitRes.ok) throw new Error("Submission failed");
   
-      // Reset modal and refresh data
+      // Only if all previous requests were successful:
+      
+      // 1. Fetch updated activities
+      const activitiesRes = await fetch(`https://localhost:44361/api/student/${username}/activities-with-submission`);
+      if (!activitiesRes.ok) throw new Error("Failed to refresh activities");
+      const updatedActivities = await activitiesRes.json();
+      
+      // 2. Update state and show success message
+      setActivities(updatedActivities);
+
+      alert(isResubmitting ? "Resubmitted successfully!" : "Submitted successfully!");
+      // 3. Reset form state
       setSelectedActivity(null);
-      setIsSubmitting(false);
       setFile(null);
       setStudentComment("");
-  
-      const updated = await fetch(`https://localhost:44361/api/student/${username}/activities-with-submission`)
-        .then(res => res.json());
-      setActivities(updated);
-  
-    } catch (err) {
-      console.error("Submission error:", err);
-      alert("Something went wrong. Please try again.");
+      
+    } catch (error) {
+      console.error("Submission error:", error);
+      // toast.error("Failed to submit activity. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
