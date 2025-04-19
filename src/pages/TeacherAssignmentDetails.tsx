@@ -1,22 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import {
-  ArrowLeft,
-  Calendar,
-  User,
-  BookOpen,
-  Award,
-  FileText,
-  Download,
-  MessageSquare,
-  Save,
-  Star,
-  Check,
-  FileCheck,
-  UserCircle,
-} from "lucide-react";
+
+import { ArrowLeft, Calendar, User, BookOpen, Award, FileText, Download, MessageSquare, Save, Star, Check, FileCheck, UserCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -24,11 +11,12 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Label } from "@/components/ui/label";
 
-// Animation variants
+const MotionDiv = motion.div;
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
@@ -78,6 +66,23 @@ interface ActivityDetails {
   maxGrade?: number;
 }
 
+interface ActivityApiResponse {
+  activityId: string;
+  studentId: string;
+  studentUsername: string;
+  activityActivityName: string;
+  classGroupSubjectClassGroupClassName: string;
+  activityTeacherUserFirstName: string;
+  activityTeacherUserLastName: string;
+  activityWeightagePercent: string;
+  activityTitle: string;
+  activityDescription: string;
+  activityDueDate: string;
+  feedback: string;
+  pdfUrl: string;
+  Grade: number;
+}
+
 const TeacherAssignmentDetails = () => {
   const navigate = useNavigate();
   const { activityId = "7361adc5-3681-4e78-9434-000f0edc3b8e" } = useParams<{ activityId: string }>();
@@ -98,7 +103,6 @@ const TeacherAssignmentDetails = () => {
 
   const handleGradeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow only numbers and decimal point
     if (/^(\d*\.?\d*)$/.test(value) || value === "") {
       setGrade(value);
     }
@@ -117,7 +121,7 @@ const TeacherAssignmentDetails = () => {
 
     setSubmitting(true);
     toast.success("Submitting feedback...");
-// https://localhost:44361/api/activities/${currentActivityId}
+
     try {
       const response = await fetch(`https://localhost:44361/api/activities/teachersubmission`, {
         method: "PUT",
@@ -128,7 +132,6 @@ const TeacherAssignmentDetails = () => {
           activityId: activityId,
           feedback: feedback.trim(),
           grade: grade ? parseFloat(grade) : null,
-          
         }),
       });
 
@@ -139,7 +142,6 @@ const TeacherAssignmentDetails = () => {
       console.log("Feedback submitted successfully");
       toast.success("Feedback submitted successfully");
       
-      // Update local activity state
       if (activity) {
         setActivity({
           ...activity,
@@ -159,32 +161,75 @@ const TeacherAssignmentDetails = () => {
     }
   };
 
+  const formatDateString = (dateStr: string) => {
+    try {
+      if (/^\d{1,2}\/\d{1,2}\/\d{4}\s+\d{1,2}:\d{1,2}:\d{1,2}\s+[ap]m$/.test(dateStr)) {
+        const parsedDate = parse(dateStr, "dd/MM/yyyy hh:mm:ss aa", new Date());
+        return format(parsedDate, "MMMM d, yyyy");
+      }
+      return format(new Date(dateStr), "MMMM d, yyyy");
+    } catch (error) {
+      console.error("Error formatting date:", error);
+      return dateStr;
+    }
+  };
+
   useEffect(() => {
     const fetchActivityDetails = async () => {
       setLoading(true);
       try {
         console.log("Fetching activity details for ID:", activityId);
         
-        const response = await fetch(`https://localhost:44361/api/activities/activitychanges/${activityId}`);
+        const response = await fetch(`https://localhost:44361/api/classgroupsubjectstudentactivities/teachersubmission`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'accept': 'text/plain'
+          },
+          body: JSON.stringify({
+            activityId: activityId,
+            studentId: "ae3ffefa-fa4d-4cd6-83a8-08dd64cd9b99"
+          })
+        });
+
         if (!response.ok) {
           throw new Error("Failed to fetch activity details");
         }
 
         const data = await response.json();
-        setActivity({
-          ...data,
-          hasFeedback: !!data.feedback,
-        });
+        console.log("Activity data received:", data);
         
-        // Initialize form state with existing data
-        if (data.feedback) {
-          setFeedback(data.feedback);
+        const activityData = Array.isArray(data) ? data[0] : data;
+
+        if (!activityData) {
+          throw new Error("Activity not found");
         }
-        if (data.grade !== undefined && data.grade !== null) {
-          setGrade(data.grade.toString());
+
+        setActivity({
+          activityId: activityData.activityId,
+          activityName: activityData.activityActivityName,
+          title: activityData.activityTitle,
+          description: activityData.activityDescription,
+          pdfUrl: activityData.pdfUrl,
+          dueDate: activityData.activityDueDate,
+          classGroupName: activityData.classGroupSubjectClassGroupClassName,
+          teacherUserFirstName: activityData.activityTeacherUserFirstName,
+          teacherUserLastName: activityData.activityTeacherUserLastName,
+          studentId: activityData.studentId,
+          studentUserFirstName: activityData.studentUsername ? activityData.studentUsername.split(' ')[0] : '',
+          studentUserLastName: activityData.studentUsername ? activityData.studentUsername.split(' ')[1] || '' : '',
+          weightagePercent: parseInt(activityData.activityWeightagePercent),
+          feedback: activityData.feedback,
+          grade: activityData.Grade,
+          hasFeedback: !!activityData.feedback,
+          studentPdfUrl: activityData.studentPdfUrl || ''
+        });
+
+        if (activityData.feedback) {
+          setFeedback(activityData.feedback);
         }
-        if (data.maxGrade) {
-          setMaxGrade(data.maxGrade);
+        if (activityData.Grade !== undefined && activityData.Grade !== null) {
+          setGrade(activityData.Grade.toString());
         }
       } catch (error) {
         console.error("Error fetching activity details:", error);
@@ -254,8 +299,8 @@ const TeacherAssignmentDetails = () => {
           Back
         </Button>
 
-        <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
-          <motion.div variants={itemVariants} className="space-y-2">
+        <MotionDiv variants={containerVariants} initial="hidden" animate="visible" className="space-y-8">
+          <MotionDiv variants={itemVariants} className="space-y-2">
             <div className="flex items-center justify-between flex-wrap gap-3">
               <h1 className="text-3xl font-medium tracking-tight">{activity.activityName}</h1>
               <div className="flex flex-wrap gap-2">
@@ -286,10 +331,9 @@ const TeacherAssignmentDetails = () => {
               <BookOpen className="h-4 w-4" />
               <span>Class: {activity.classGroupName || activity.classLevel || "Not specified"}</span>
             </div>
-          </motion.div>
+          </MotionDiv>
 
-          {/* Student Information */}
-          <motion.div variants={itemVariants}>
+          <MotionDiv variants={itemVariants}>
             <Card>
               <CardHeader className="bg-muted/30 pb-4">
                 <CardTitle className="text-xl flex items-center gap-2">
@@ -320,9 +364,9 @@ const TeacherAssignmentDetails = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
+          </MotionDiv>
 
-          <motion.div variants={itemVariants}>
+          <MotionDiv variants={itemVariants}>
             <Card className="overflow-hidden">
               <CardHeader className="bg-muted/30 pb-4">
                 <CardTitle className="text-xl">Activity Details</CardTitle>
@@ -336,7 +380,7 @@ const TeacherAssignmentDetails = () => {
                         <p className="text-sm font-medium">Due Date</p>
                         <p className="text-muted-foreground">
                           {activity.dueDate
-                            ? format(new Date(activity.dueDate), "MMMM d, yyyy")
+                            ? formatDateString(activity.dueDate)
                             : "No due date specified"}
                         </p>
                       </div>
@@ -422,7 +466,6 @@ const TeacherAssignmentDetails = () => {
 
                 <Separator />
 
-                {/* Grading and Feedback Section */}
                 <div>
                   <h3 className="text-lg font-medium mb-3 flex items-center">
                     <MessageSquare className="h-5 w-5 mr-2 text-primary" />
@@ -484,8 +527,8 @@ const TeacherAssignmentDetails = () => {
                 </div>
               </CardContent>
             </Card>
-          </motion.div>
-        </motion.div>
+          </MotionDiv>
+        </MotionDiv>
       </div>
     </div>
   );
