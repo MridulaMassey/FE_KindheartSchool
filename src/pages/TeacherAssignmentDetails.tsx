@@ -95,9 +95,9 @@ const TeacherAssignmentDetails = () => {
           hasFeedback: true,
         });
       }
-      const tes= activityId;
-      const test= '/classgroupsubjectsactivitytudentview/{activityId}';
-      navigate('/classgroupsubjectsactivitytudentview/${tes}');
+   
+    //  navigate('/classgroupsubjectsactivitytudentview/${activityId}');
+      navigate(`/classgroupsubjectsactivitytudentview/${activityId}`);
     } catch (error) {
       console.error("Error submitting feedback:", error);
       toast.error("Failed to submit feedback", {
