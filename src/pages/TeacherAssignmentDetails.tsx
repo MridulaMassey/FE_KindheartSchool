@@ -88,6 +88,7 @@ const TeacherAssignmentDetails = () => {
   const { activityId = "7361adc5-3681-4e78-9434-000f0edc3b8e" } = useParams<{ activityId: string }>();
   const [activity, setActivity] = useState<ActivityDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const StudentId = localStorage.getItem('studentId');
   const [feedback, setFeedback] = useState("");
   const [grade, setGrade] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -188,7 +189,7 @@ const TeacherAssignmentDetails = () => {
           },
           body: JSON.stringify({
             activityId: activityId,
-            studentId: "ae3ffefa-fa4d-4cd6-83a8-08dd64cd9b99"
+            studentId: StudentId
           })
         });
 
@@ -222,7 +223,7 @@ const TeacherAssignmentDetails = () => {
           feedback: activityData.feedback,
           grade: activityData.Grade,
           hasFeedback: !!activityData.feedback,
-          studentPdfUrl: activityData.studentPdfUrl || ''
+          studentPdfUrl: activityData.pdfUrl || ''
         });
 
         if (activityData.feedback) {
