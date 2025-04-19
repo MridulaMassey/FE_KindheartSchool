@@ -63,8 +63,9 @@ const App = () => (
           <Route path="/admin" element={<AdminDashboard />} />
           
           <Route path="/rewards" element={<Rewards />} />
-          <Route path="/teacherassignmentdetails/:activityId" element={<TeacherAssignmentDetails />} />
+          {/* <Route path="/teacherassignmentdetails/:activityId" element={<TeacherAssignmentDetails />} /> */}
           <Route path="/teacherstudentassignment/:activityId" element={<TeacherStudentAssignment/>} />
+          <Route path="/teacherassignmentdetails/:activityId/:studentId" element={<TeacherAssignmentDetails />} />
           <Route path="/classgroupsubjectsactivitytudentview/:activityId" element={<ClassGroupSubjectStudentActivity/>} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="/studentassignmentdetails/:activityId" element={<StudentAssignmentDetails />} />
