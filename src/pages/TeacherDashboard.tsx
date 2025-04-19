@@ -1,10 +1,9 @@
-//import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import TeacherSidebar from '../components/layout/TeacherSidebar';
-import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface ClassGroup {
@@ -16,26 +15,35 @@ interface ClassGroup {
   classGroupSubjects: any[];
 }
 
-
 const TeacherDashboard: React.FC = () => {
-
   const [classes, setClasses] = useState<ClassGroup[]>([]);
+  const [activitiesCount, setActivitiesCount] = useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchClasses = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('https://localhost:44361/api/classgroups'); // Replace with actual API
-        const data = await response.json();
-        setClasses(data);
+        // Fetch classes
+        const classesResponse = await fetch('https://localhost:44361/api/classgroups');
+        const classesData = await classesResponse.json();
+        setClasses(classesData);
+
+        // Fetch activities count
+        const activitiesResponse = await fetch('https://localhost:44361/api/activities/activitieslist');
+        const activitiesData = await activitiesResponse.json();
+        console.log(activitiesData);
+        setActivitiesCount(activitiesData.length);
       } catch (error) {
-        console.error('Failed to fetch class groups:', error);
+        console.error('Failed to fetch data:', error);
       }
     };
 
-    fetchClasses();
+    fetchData();
   }, []);
 
+  const handleActivitiesClick = () => {
+    navigate('/activitiespagination'); // Adjust this route based on your activities page route
+  };
 
   return (
     <div className="flex h-screen">
@@ -50,7 +58,15 @@ const TeacherDashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-4 gap-4 mb-6">
-          <Card><CardContent className="p-4 text-center"><h2 className="text-2xl font-bold">12</h2><p>Activities Created</p></CardContent></Card>
+          <Card>
+            <CardContent 
+              className="p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors"
+              onClick={handleActivitiesClick}
+            >
+              <h2 className="text-2xl font-bold">{activitiesCount}</h2>
+              <p className="text-blue-600 hover:underline">Activities Created</p>
+            </CardContent>
+          </Card>
           <Card><CardContent className="p-4 text-center"><h2 className="text-2xl font-bold">5</h2><p>Pending Submissions</p></CardContent></Card>
           <Card><CardContent className="p-4 text-center"><h2 className="text-2xl font-bold">30</h2><p>Students</p></CardContent></Card>
           <Card><CardContent className="p-4 text-center"><h2 className="text-2xl font-bold">4</h2><p>Upcoming Dates</p></CardContent></Card>
