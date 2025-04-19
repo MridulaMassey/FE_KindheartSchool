@@ -80,7 +80,8 @@ const TeacherAssignmentDetails = () => {
       await teacherAssignmentService.submitFeedback(
         activityId!,
         feedback,
-        grade ? parseFloat(grade) : null
+        grade ? parseFloat(grade) : null,
+        studentId
       );
 
       console.log("Feedback submitted successfully");
@@ -94,7 +95,9 @@ const TeacherAssignmentDetails = () => {
           hasFeedback: true,
         });
       }
-      navigate("/classgroupsubject");
+      const tes= activityId;
+      const test= '/classgroupsubjectsactivitytudentview/{activityId}';
+      navigate('/classgroupsubjectsactivitytudentview/${tes}');
     } catch (error) {
       console.error("Error submitting feedback:", error);
       toast.error("Failed to submit feedback", {

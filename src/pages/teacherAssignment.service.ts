@@ -47,7 +47,7 @@ export const teacherAssignmentService = {
     };
   },
 
-  async submitFeedback(activityId: string, feedback: string, grade: number | null) {
+  async submitFeedback(activityId: string, feedback: string, grade: number | null,studentId:string) {
     const response = await fetch(`https://localhost:44361/api/activities/teachersubmission`, {
       method: "PUT",
       headers: {
@@ -57,6 +57,7 @@ export const teacherAssignmentService = {
         activityId,
         feedback: feedback.trim(),
         grade,
+        studentId
       }),
     });
 
