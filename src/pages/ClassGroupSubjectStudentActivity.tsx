@@ -382,7 +382,7 @@ const ClassGroupSubjectStudentActivity = () => {
                                 className="text-primary"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  navigate(`/teacherassignmentdetails/${activity.activityId}`);
+                                  navigate(`/teacherassignmentdetails/${activity.activityId}/${activity.studentId}`);
                                 }}
                               >
                                 View Details
