@@ -18,6 +18,7 @@ interface ClassGroup {
 const TeacherDashboard: React.FC = () => {
   const [classes, setClasses] = useState<ClassGroup[]>([]);
   const [activitiesCount, setActivitiesCount] = useState<number>(0);
+  const [submissionsCount, setSubmissionsCount] = useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -31,8 +32,12 @@ const TeacherDashboard: React.FC = () => {
         // Fetch activities count
         const activitiesResponse = await fetch('https://localhost:44361/api/activities/activitieslist');
         const activitiesData = await activitiesResponse.json();
-        console.log(activitiesData);
         setActivitiesCount(activitiesData.length);
+
+        // Fetch submissions count
+        const submissionsResponse = await fetch('https://localhost:44361/api/Submissions');
+        const submissionsData = await submissionsResponse.json();
+        setSubmissionsCount(submissionsData.length);
       } catch (error) {
         console.error('Failed to fetch data:', error);
       }
@@ -67,7 +72,12 @@ const TeacherDashboard: React.FC = () => {
               <p className="text-blue-600 hover:underline">Activities Created</p>
             </CardContent>
           </Card>
-          <Card><CardContent className="p-4 text-center"><h2 className="text-2xl font-bold">5</h2><p>Pending Submissions</p></CardContent></Card>
+          <Card>
+            <CardContent className="p-4 text-center">
+              <h2 className="text-2xl font-bold">{submissionsCount}</h2>
+              <p>Pending Submissions</p>
+            </CardContent>
+          </Card>
           <Card><CardContent className="p-4 text-center"><h2 className="text-2xl font-bold">30</h2><p>Students</p></CardContent></Card>
           <Card><CardContent className="p-4 text-center"><h2 className="text-2xl font-bold">4</h2><p>Upcoming Dates</p></CardContent></Card>
         </div>
