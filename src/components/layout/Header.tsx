@@ -1,9 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useNavigate,useLocation } from 'react-router-dom';
 import { LogOut, Bell, X } from 'lucide-react'; // Importing icons
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    // Remove username from localStorage
+    localStorage.removeItem('username');
+    // Remove role from localStorage
+    localStorage.removeItem('role');
+    // Redirect to login page
+    navigate('/');
+	  };
   const [active, setActive] = useState(location.pathname);
   const [showNotifications, setShowNotifications] = useState(false);
   const popupRef = useRef(null);
@@ -135,10 +145,11 @@ const Navbar = () => {
         {/* Logout Button */}
 
        <button 
-      onClick={() => {
-       // localStorage.clear(); // 🧹 Clear all stored data (or use removeItem if you want to be specific)
-        window.location.href = "/"; // ✅ Redirect to login/home page
-      }}
+      // onClick={() => {
+      //  // localStorage.clear(); // 🧹 Clear all stored data (or use removeItem if you want to be specific)
+      //   window.location.href = "/"; // ✅ Redirect to login/home page
+      // }}
+      onClick={handleLogout}
       className="p-2 rounded-lg hover:bg-red-600 transition-all"
     >
       <LogOut className="h-6 w-6 text-white" />

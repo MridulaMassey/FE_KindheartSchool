@@ -27,6 +27,7 @@ import TeacherStudentAssignment from "./pages/TeacherStudentAssignment";
 import ClassGroupSubjectActivity from "./pages/ClassGroupSubjectActivity";
 import TeacherAssignmentDetails from "./pages/TeacherAssignmentDetails";
 import StudentNotificationTest from "./pages/testalert";
+import PrivateRoute from "./pages/PrivateRoute";
 
 
 const queryClient = new QueryClient();
@@ -49,29 +50,28 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
           <Route path="/logout" element={<Navigate to="/" />} />
-          <Route path="/StudentDashboard" element={<StudentDashboard/>} />
-          <Route path="/TeacherDashboard" element={<TeacherDashboard />} />
-          <Route path="/studentactivities" element={<StudentActivities />} />
-          {/* <Route path="/activity" element={<Activity />} /> */}
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/games" element={<Games />} />
-          <Route path="/activities/create" element={<CreateActivity />} /> 
-          <Route path="/activitiespagination" element={<ActivitiesPaginated/>} /> 
-          <Route path="/classgroupsubject" element={<ClassGroupSubjectActivity />} />
-          <Route path="/myclasses" element={<MyClasses />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/upcomingtask" element={<UpcomingTask />} />
-          <Route path="/admin" element={<AdminDashboard />} />
           
-          <Route path="/rewards" element={<Rewards />} />
-          {/* <Route path="/teacherassignmentdetails/:activityId" element={<TeacherAssignmentDetails />} /> */}
-          <Route path="/teacherstudentassignment/:activityId" element={<TeacherStudentAssignment/>} />
-          <Route path="/teacherassignmentdetails/:activityId/:studentId" element={<TeacherAssignmentDetails />} />
-          <Route path="/classgroupsubjectsactivitytudentview/:activityId" element={<ClassGroupSubjectStudentActivity/>} />
-          <Route path="/alert" element={<StudentNotificationTest/>} />
+          {/* Protected Routes */}
+          <Route path="/StudentDashboard" element={<PrivateRoute element={<StudentDashboard />} />} />
+          <Route path="/TeacherDashboard" element={<PrivateRoute element={<TeacherDashboard />} />} />
+          <Route path="/studentactivities" element={<PrivateRoute element={<StudentActivities />} />} />
+          <Route path="/resources" element={<PrivateRoute element={<Resources />} />} />
+          <Route path="/games" element={<PrivateRoute element={<Games />} />} />
+          <Route path="/activities/create" element={<PrivateRoute element={<CreateActivity />} />} />
+          <Route path="/activitiespagination" element={<PrivateRoute element={<ActivitiesPaginated />} />} />
+          <Route path="/classgroupsubject" element={<PrivateRoute element={<ClassGroupSubjectActivity />} />} />
+          <Route path="/myclasses" element={<PrivateRoute element={<MyClasses />} />} />
+          <Route path="/about" element={<PrivateRoute element={<About />} />} />
+          <Route path="/upcomingtask" element={<PrivateRoute element={<UpcomingTask />} />} />
+          <Route path="/admin" element={<PrivateRoute element={<AdminDashboard />} />} />
+          <Route path="/rewards" element={<PrivateRoute element={<Rewards />} />} />
+          <Route path="/teacherstudentassignment/:activityId" element={<PrivateRoute element={<TeacherStudentAssignment />} />} />
+          <Route path="/teacherassignmentdetails/:activityId/:studentId" element={<PrivateRoute element={<TeacherAssignmentDetails />} />} />
+          <Route path="/classgroupsubjectsactivitytudentview/:activityId" element={<PrivateRoute element={<ClassGroupSubjectStudentActivity />} />} />
+          <Route path="/alert" element={<PrivateRoute element={<StudentNotificationTest />} />} />
+          <Route path="/studentassignmentdetails/:activityId" element={<PrivateRoute element={<StudentAssignmentDetails />} />} />
           
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="/studentassignmentdetails/:activityId" element={<StudentAssignmentDetails />} />
+          {/* Catch-all route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
