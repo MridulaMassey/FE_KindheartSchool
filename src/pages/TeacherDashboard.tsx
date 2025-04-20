@@ -5,6 +5,7 @@ import { Input } from '../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import TeacherSidebar from '../components/layout/TeacherSidebar';
 import { useNavigate } from 'react-router-dom';
+import apiClient from './apiClient';
 
 interface ClassGroup {
   classGroupId: string;
@@ -30,8 +31,9 @@ const TeacherDashboard: React.FC = () => {
         setClasses(classesData);
 
         // Fetch activities count
-        const activitiesResponse = await fetch('https://localhost:44361/api/activities/activitieslist');
-        const activitiesData = await activitiesResponse.json();
+        const activitiesResponse =await  apiClient.get('/activities/activitieslist');
+        
+        const activitiesData = await activitiesResponse.data;
         setActivitiesCount(activitiesData.length);
 
         // Fetch submissions count
