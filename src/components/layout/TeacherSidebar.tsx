@@ -7,6 +7,7 @@ const TeacherSidebar: React.FC = () => {
 
     const handleLogout = () => {
         // Clear username from localStorage
+        localStorage.removeItem('authToken');
         localStorage.removeItem('username');
         // Redirect to login page
         navigate('/');

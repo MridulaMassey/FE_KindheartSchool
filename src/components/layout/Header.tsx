@@ -8,6 +8,7 @@ const Navbar = () => {
 
   const handleLogout = () => {
     // Remove username from localStorage
+    localStorage.removeItem('authToken');
     localStorage.removeItem('username');
     // Remove role from localStorage
     localStorage.removeItem('role');

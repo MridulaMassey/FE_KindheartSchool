@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom';
+import { decodeToken } from './auth';
 
 interface PrivateRouteProps {
   element: JSX.Element;
@@ -6,16 +7,19 @@ interface PrivateRouteProps {
 
 const PrivateRoute = ({ element }: PrivateRouteProps) => {
   const location = useLocation();
-  const isAuthenticated = localStorage.getItem('username') !== null;
+  const token = localStorage.getItem('authToken');
+  const decodedToken = decodeToken(token);
   
-  console.log('Auth check:', { 
-    isAuthenticated, 
-    storedUsername: localStorage.getItem('username')
+  console.log('Auth check:', {
+    isAuthenticated: !!decodedToken,
+    tokenInfo: decodedToken ? {
+      username: decodedToken.username,
+      role: decodedToken.role,
+      tokenExpiry: decodedToken.exp
+    } : null
   });
 
-  if (!isAuthenticated) {
-    // Redirect to login page while saving the attempted url
-    // return <Navigate to="/login" state={{ from: location }} replace />;
+  if (!decodedToken) {
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 

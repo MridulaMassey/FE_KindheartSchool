@@ -55,6 +55,7 @@ const Index: React.FC = () => {
       // Store data in localStorage
            localStorage.setItem("username", userlogin); //  Use the value from input
       localStorage.setItem("role", data.rolename); //value from API
+      localStorage.setItem('authToken', data.token);
       console.log("💾 Stored userName in localStorage:", data.userName); 
 
       // Redirect
