@@ -12,6 +12,7 @@ const games = [
     description: "Solve puzzles and unlock doors!",
     iframeSrc: "https://www.jopi.com/gam/key-quest/"
   },
+
   {
     id: "way-to-home",
     title: "Way to Home",
@@ -19,6 +20,31 @@ const games = [
     description: "Help the lost character find their way!",
     iframeSrc: "https://www.jopi.com/gam/way-to-home/"
   },
+
+  {
+    id: "math-challenge",
+    title: "Pixel Mini Golf",
+    icon: "➕",
+    description: "Test your math skills in a fun way!",
+    iframeSrc: "https://www.jopi.com/gam/pixel-mini-golf/"
+  },
+
+  {
+    id: "math-challenge",
+    title: "Pixel Mini Golf",
+    icon: "➕",
+    description: "Test your math skills in a fun way!",
+    iframeSrc: "https://www.jopi.com/gam/pixel-mini-golf/"
+  },
+
+  {
+    id: "math-challenge",
+    title: "Pixel Mini Golf",
+    icon: "➕",
+    description: "Test your math skills in a fun way!",
+    iframeSrc: "https://www.jopi.com/gam/pixel-mini-golf/"
+  },
+
   {
     id: "math-challenge",
     title: "Pixel Mini Golf",
@@ -26,6 +52,7 @@ const games = [
     description: "Test your math skills in a fun way!",
     iframeSrc: "https://www.jopi.com/gam/pixel-mini-golf/"
   }
+
 ];
 
 const GamesPage = () => {
@@ -88,8 +115,7 @@ const GamesPage = () => {
           </div>
         </div>
       )}
-
-      <Footer />
+    
     </div>
   );
 };

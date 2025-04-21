@@ -4,20 +4,14 @@ import { Button } from "@/components/ui/button";
 import Footer from "@/components/layout/Footer";
 
 const Index: React.FC = () => {
-  // Login popup visibility
   const [showLogin, setShowLogin] = useState(false);
-
-  // Login form state
-  const [email, setEmail] = useState("");
+  const [userlogin, setuserlogin] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  // Video section state
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(true);
 
-  // Toggle video playback
   const togglePlayPause = () => {
     if (videoRef.current) {
       if (isPlaying) {
@@ -30,9 +24,10 @@ const Index: React.FC = () => {
   };
 
   const handleLogin = async () => {
+    console.log("🔐 Login button clicked");
     setLoading(true);
     setError("");
-  
+
     try {
       const response = await fetch("https://localhost:44361/api/auth/login", {
         method: "POST",
@@ -40,26 +35,29 @@ const Index: React.FC = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userName: email, // if your backend uses "userName"
+          userName: userlogin,
           password: password,
           rememberMe: true,
         }),
       });
- 
+
       const data = await response.json();
-    
-      // If response is NOT ok, but status is still 200 (like your API)
+      console.log("✅ Login response data:", data);
+
+      // Check for API success
       if (!response.ok || data.message !== "Login successful") {
+        console.error("❌ Login failed:", data.message);
         setError(data.message || "Login failed");
         setLoading(false);
         return;
       }
-  
-      // Store user info (you can extend this if your API returns more details)
-      localStorage.setItem("role", data.rolename);
-      localStorage.setItem("userName", email);
-  
-      // Redirect based on role
+
+      // Store data in localStorage
+           localStorage.setItem("username", userlogin); //  Use the value from input
+      localStorage.setItem("role", data.rolename); //value from API
+      console.log("💾 Stored userName in localStorage:", data.userName); 
+
+      // Redirect
       if (data.rolename === "Student") {
         window.location.href = "/StudentDashboard";
       } else if (data.rolename === "Teacher") {
@@ -67,37 +65,34 @@ const Index: React.FC = () => {
       } else {
         window.location.href = "/admin-dashboard";
       }
-  
+
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("🔥 Login error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 relative">
-        {/* ✅ Hero Section */}
+        {/* Hero Section */}
         <section className="relative overflow-hidden bg-cover bg-center h-[250px] flex flex-col items-center justify-center text-center">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-red-500 to-orange-400 opacity-80 z-[-1] animate-pulse" />
-
-          {/* GIFs for Visual Appeal */}
           <div className="absolute bottom-0 left-0 w-24 h-24 md:w-52 md:h-52">
             <img src="rainbow_kids.gif" alt="Animated Learning" className="w-full h-full object-contain opacity-100" />
           </div>
           <div className="absolute top-0 right-0 w-32 h-32 md:w-52 md:h-60">
             <img src="pencil_kids.gif" alt="Animated Learning" className="w-full h-full object-contain opacity-100" />
           </div>
-
           <div className="container px-4 md:px-6 py-10">
             <h1 className="text-3xl md:text-5xl font-extrabold tracking-tighter text-white drop-shadow-lg">
               <span className="text-red-600">Kind Hearts</span> Learning Application
             </h1>
             <div className="mt-6">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="rounded-full px-10 py-3 bg-red-500 hover:bg-red-700 text-red-100 text-lg shadow-lg transition-transform transform hover:scale-105"
                 onClick={() => setShowLogin(true)}
               >
@@ -107,14 +102,12 @@ const Index: React.FC = () => {
           </div>
         </section>
 
-        {/* ✅ Features Section */}
+        {/* Features */}
         <section className="py-10 bg-white">
           <div className="container px-4 md:px-6 text-center">
             <h2 className="text-3xl font-bold tracking-tighter text-red-700">
               Why Learn with Us?
             </h2>
-
-            {/* 🎥 Video Section */}
             <div className="mt-6 flex flex-col items-center">
               <video
                 ref={videoRef}
@@ -129,16 +122,14 @@ const Index: React.FC = () => {
                 {isPlaying ? "Pause" : "Play"}
               </button>
             </div>
-
-            {/* 📦 Feature Boxes */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mt-8">
               {[
                 { icon: "📖", title: "Comprehensive Curriculum", description: "Covering Maths, English, Science & more." },
                 { icon: "🏆", title: "Fun Rewards & Badges", description: "Earn points and badges as you complete lessons." },
                 { icon: "🎨", title: "Interactive Activities", description: "Worksheets, games, quizzes & more!" }
               ].map((feature, index) => (
-                <div 
-                  key={index} 
+                <div
+                  key={index}
                   className="bg-red-100 border border-red-300 rounded-xl p-6 shadow-md hover:scale-105 transition-all text-center"
                 >
                   <div className="text-5xl">{feature.icon}</div>
@@ -150,15 +141,14 @@ const Index: React.FC = () => {
           </div>
         </section>
 
-        {/* ✅ Call to Action Section */}
+        {/* CTA */}
         <section className="py-5 bg-red-600">
           <div className="container px-4 md:px-6 text-center text-white">
             <h2 className="text-3xl font-bold">Ready to Start Learning?</h2>
             <p className="mt-2">Join thousands of students already improving their skills with Kind Heart Learning!</p>
-
-            <Button 
-              size="lg" 
-              className="mt-6 px-8 bg-yellow-400 hover:bg-yellow-500 text-red-900" 
+            <Button
+              size="lg"
+              className="mt-6 px-8 bg-yellow-400 hover:bg-yellow-500 text-red-900"
               onClick={() => setShowLogin(true)}
             >
               Let's Go <ArrowRight className="ml-2 h-4 w-4" />
@@ -166,7 +156,7 @@ const Index: React.FC = () => {
           </div>
         </section>
 
-        {/* ✅ Login Popup Window */}
+        {/* Login Popup */}
         {showLogin && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
             <div className="bg-white rounded-lg shadow-lg w-full max-w-md p-6 relative">
@@ -176,23 +166,20 @@ const Index: React.FC = () => {
               <h2 className="text-2xl font-bold text-center text-red-600">Login</h2>
               <p className="text-sm text-gray-500 text-center mb-4">Enter your details to continue</p>
               <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full border rounded-md p-2 mb-3"
-                />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full border rounded-md p-2 mb-3"
-                />
-
-                {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
-
-
+                type="text"
+                placeholder="User Name"
+                value={userlogin}
+                onChange={(e) => setuserlogin(e.target.value)}
+                className="w-full border rounded-md p-2 mb-3"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border rounded-md p-2 mb-3"
+              />
+              {error && <p className="text-red-600 text-sm mb-2">{error}</p>}
               <button
                 className="w-full bg-red-600 text-white py-2 rounded-md hover:bg-red-700 transition-all disabled:opacity-50"
                 onClick={handleLogin}
@@ -205,7 +192,6 @@ const Index: React.FC = () => {
         )}
       </main>
 
-      {/* ✅ Footer */}
       <Footer />
     </div>
   );

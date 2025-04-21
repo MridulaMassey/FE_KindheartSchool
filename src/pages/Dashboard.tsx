@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { useNavigate } from "react-router-dom"; 
+import { useStudentActivities } from "@/hooks/useStudentActivities";
 
 // Sample data for Student dashboard
 const studentActivities = [
@@ -98,6 +99,8 @@ const studentAchievements = [
 //   }
 // ];
 
+const { activities, getUpcomingActivities } = useStudentActivities();
+const upcoming = getUpcomingActivities();
 const Dashboard = ({ userType = "student", userName = "User" }) => {
   return (
     <div 
@@ -147,9 +150,7 @@ const StudentDashboard = ({ activities, achievements }) => {
   return (
     <>
       {/* Stats Section */}
-      
-
-        {/********************************Start of Profile********************************************/}
+          {/********************************Start of Profile********************************************/}
       {/* Content Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
        <section className="lg:col-span-2 animate-fade-in" style={{ animationDelay: '0.2s' }}>
@@ -210,6 +211,7 @@ const StudentDashboard = ({ activities, achievements }) => {
         </section>      
       </div> 
       {/********************************END of PROFILE********************************************/}
+      
      {/********************************START of Activities and Acheivements*********************/}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

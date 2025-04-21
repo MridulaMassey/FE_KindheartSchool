@@ -8,6 +8,13 @@ const Navbar = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const popupRef = useRef(null);
 
+  const [role, setRole] = useState("");
+
+  useEffect(() => {
+    const savedRole = localStorage.getItem("role");
+    setRole(savedRole || "");
+  }, []);
+
   useEffect(() => {
     setActive(location.pathname);
   }, [location.pathname]);
@@ -47,9 +54,13 @@ const Navbar = () => {
       {/* Center: Navigation Links */}
       <div className="flex space-x-10">
         {[
-          { name: "Home", icon: "🏠", link: "/dashboard" },
+          { name: "Home", icon: "🏠", 
+            link: role === "Teacher" ? "/TeacherDashboard" : "/StudentDashboard",
+          },
+
+
           { name: "Resources", icon: "📖", link: "/Resources" },
-          { name: "Activities", icon: "🎨", link: "/Activities" },
+          { name: "Activities", icon: "🎨", link: "/StudentActivities" },
           { name: "Games", icon: "🎮", link: "/Games"},
           { name: "Rewards", icon: "🏆", link: "/rewards" }
         ].map((item) => (
@@ -123,13 +134,15 @@ const Navbar = () => {
 
         {/* Logout Button */}
 
-        <button 
-        onClick={() => (window.location.href = "/")} // ✅ Redirects to Main Page
-        className="p-2 rounded-lg hover:bg-red-600 transition-all"
-      >
-        <LogOut className="h-6 w-6 text-white" />
-      </button>
-
+       <button 
+      onClick={() => {
+       // localStorage.clear(); // 🧹 Clear all stored data (or use removeItem if you want to be specific)
+        window.location.href = "/"; // ✅ Redirect to login/home page
+      }}
+      className="p-2 rounded-lg hover:bg-red-600 transition-all"
+    >
+      <LogOut className="h-6 w-6 text-white" />
+    </button>
         {/* <button 
           onClick={() => alert("Logging out...")} 
           className="p-2 rounded-lg hover:bg-red-600 transition-all"

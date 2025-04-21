@@ -8,9 +8,23 @@ import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import LoginForm from "./components/auth/LoginForm";
 import NotFound from "./pages/NotFound";
-import Activities from './pages/Activities';
+import StudentActivities from './pages/StudentActivities';
 import Resources from './pages/Resources';
 import Games from './pages/Games';
+import StudentDashboard from './pages/StudentDashboard';
+import TeacherDashboard from './pages/TeacherDashboard';
+import MyClasses from './pages/MyClasses';
+import { Activity } from "lucide-react";
+import CreateActivity from "./pages/CreateActivityPage";
+import ActivitiesPaginated from "./pages/ActiviesPagination";
+import StudentAssignmentDetails from "./pages/StudentAssignmentDetails";
+import UpcomingTask from "./pages/UpcomingTask";
+import AdminDashboard from "./pages/AdminDashboard";
+import Rewards from "./pages/Rewards";
+import About from "./pages/About";
+import JournalPage from './pages/JournalPage';
+//import JournalCalendarPage from './pages/JournalPage';
+import JournalCalendarPage from './pages/JournalCalendarPage';
 
 const queryClient = new QueryClient();
 
@@ -31,12 +45,26 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/logout" element={<Navigate to="/" />} />
-          <Route path="/activities" element={<Activities />} />
+          <Route path="/StudentDashboard" element={<StudentDashboard/>} />
+          <Route path="/TeacherDashboard" element={<TeacherDashboard />} />
+          <Route path="/studentactivities" element={<StudentActivities />} />
+          {/* <Route path="/activity" element={<Activity />} /> */}
           <Route path="/resources" element={<Resources />} />
           <Route path="/games" element={<Games />} />
+          <Route path="/activities/create" element={<CreateActivity />} /> 
+          <Route path="/activitiespagination" element={<ActivitiesPaginated/>} /> 
+          <Route path="/myclasses" element={<MyClasses />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/upcomingtask" element={<UpcomingTask />} />
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/rewards" element={<Rewards />} />
+          <Route path="/journal" element={<JournalPage />} />
+          <Route path="/journal/calendar" element={<JournalCalendarPage />} />
+
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/studentassignmentdetails/:activityId" element={<StudentAssignmentDetails />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
@@ -45,3 +73,4 @@ const App = () => (
 );
 
 export default App;
+
