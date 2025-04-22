@@ -44,62 +44,6 @@ const StudentActivities: React.FC = () => {
     return activities.filter(a => new Date(a.dueDate) > now);
   };
 
-  // const handleActivitySubmit = async () => {
-  //   if (!file || !selectedActivity) return alert("Please upload a file");
-
-  //   setIsSubmitting(true);
-
-  //   const formData = new FormData();
-  //   formData.append("file", file);
-
-  //   // Upload to FileUploadController (Google Cloud)
-  //   const fileRes = await fetch("https://localhost:44361/api/upload", {
-  //     method: "POST",
-  //     body: formData
-  //   });
-
-  //   const { downloadUrl } = await fileRes.json();
-  //   const fileUrl = downloadUrl;
-
-  //   // Fetch student ID (optional: store this in localStorage/session on login)
-  //   // const studentRes = await fetch(`https://localhost:44361/api/profile/${username}`);
-  //   // const student = await studentRes.json();
-
-  //   const response = await fetch(`https://localhost:44361/api/Student/get-student-id/${username}`);
-  //   const data = await response.json();
-  //   const studentId = data.studentId;
-    
-  //   // Submit activity
-  //   await fetch("https://localhost:44361/api/Submissions/submit", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       activityId: selectedActivity.activityId,
-  //       studentId: studentId,
-  //       pdfUrl: fileUrl,
-  //       studentComment: studentcomment
-      
-  //     })
-  //   });
-
-  //   console.log({
-  //     activityId: selectedActivity.activityId,
-  //     studentId: studentId,
-  //     pdfUrl: fileUrl,
-  //     studentComment: studentcomment
-  //   });
-
-  //   alert("Activity submitted successfully!");
-  //   setSelectedActivity(null);
-  //   setIsSubmitting(false);
-  //   setFile(null);
-  //   setStudentComment("");
-
-  //   // Refresh activities list
-  //   const updated = await fetch(`https://localhost:44361/api/student/${username}/activities-with-submission`)
-  //     .then(res => res.json());
-  //   setActivities(updated);
-  // };
   const handleActivitySubmit = async () => {
     if (!file || !selectedActivity) return alert("Please upload a file");
   
@@ -192,40 +136,45 @@ const StudentActivities: React.FC = () => {
                   </div>
 
                   <div className="mt-2">
-                  {activity.isSubmitted ? (
-                        <div className="text-green-700 text-sm">
-                          ✅ Submitted on {new Date(activity.submissionDate || "").toLocaleDateString()}
-                          {activity.grade !== null && <p>📊 Grade: <strong>{activity.grade}</strong></p>}
-                          {activity.studentcomment && <p>📝 Comment: <em>{activity.studentcomment}</em></p>}
+                    {activity.isSubmitted ? (
+                      <div className="text-green-700 text-sm">
+                        ✅ Submitted on {new Date(activity.submissionDate || "").toLocaleDateString()}
+                        {activity.grade !== null && <p>📊 Grade: <strong>{activity.grade}</strong></p>}
+                        {activity.feedback && (
+                          <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <p className="font-semibold text-gray-700">🗣️ Teacher's Feedback:</p>
+                            <p className="text-gray-600 mt-1 italic">{activity.feedback}</p>
+                          </div>
+                        )}
+                        {activity.studentcomment && <p>📝 Your Comment: <em>{activity.studentcomment}</em></p>}
 
-                          {/* ✅ Show resubmit if still before due date */}
-                          {new Date(activity.dueDate) >= new Date() && (
-                            <button
-                              className="mt-2 text-blue-600 underline"
-                              onClick={() => {
-                                setSelectedActivity(activity);
-                                setIsResubmitting(true);
-                              }}
-                            >
-                              🔁 Resubmit Activity
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <>
-                          <p className="text-red-600 text-sm">🚨 Not submitted yet</p>
+                        {/* Only show resubmit if there's no feedback and it's before due date */}
+                        {!activity.feedback && new Date(activity.dueDate) >= new Date() && (
                           <button
                             className="mt-2 text-blue-600 underline"
                             onClick={() => {
                               setSelectedActivity(activity);
-                              setIsResubmitting(false);
+                              setIsResubmitting(true);
                             }}
                           >
-                            ✏️ Submit This Activity
+                            🔁 Resubmit Activity
                           </button>
-                        </>
-                      )}
-
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-red-600 text-sm">🚨 Not submitted yet</p>
+                        <button
+                          className="mt-2 text-blue-600 underline"
+                          onClick={() => {
+                            setSelectedActivity(activity);
+                            setIsResubmitting(false);
+                          }}
+                        >
+                          ✏️ Submit This Activity
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))
