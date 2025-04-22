@@ -455,16 +455,23 @@ const handleClassGroupChange = (value: string) => {
                       <FormItem>
                         <FormLabel>Weightage</FormLabel>
                         <FormControl>
-                          <Input
-                            type="number"
-                            placeholder="Enter weightage (1-100)"
-                            {...field}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value, 10);
-                              field.onChange(isNaN(value) ? "" : value);
-                            }}
-                            className="h-12"
-                          />
+                        <Input
+  type="number"
+  placeholder="Enter weightage (1-100)"
+  {...field}
+  onChange={(e) => {
+    const value = parseInt(e.target.value, 10);
+    // Ensure value is between 1 and 100
+    if (!isNaN(value)) {
+      const clampedValue = Math.max(1, Math.min(value, 100));
+      field.onChange(clampedValue);
+    } else {
+      field.onChange("");
+    }
+  }}
+  className="h-12"
+/>
+
                         </FormControl>
                         <FormDescription>
                           The weightage of this activity (value between 1-100)
