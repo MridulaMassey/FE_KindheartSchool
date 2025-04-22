@@ -4,6 +4,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+
 const games = [
   {
     id: "key-quest",
@@ -53,7 +54,7 @@ const games = [
     iframeSrc: "https://www.jopi.com/gam/pixel-mini-golf/"
   }
 
-];
+  ];
 
 const GamesPage = () => {
   const [selectedGame, setSelectedGame] = useState(null);
@@ -71,7 +72,7 @@ const GamesPage = () => {
           Choose a game and start playing! Earn points and have fun.
         </p>
       </section>
-
+     
       {/* 🎮 Game Cards Section */}
       <main className="container px-4 md:px-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

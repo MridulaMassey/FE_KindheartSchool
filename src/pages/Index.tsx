@@ -53,7 +53,7 @@ const Index: React.FC = () => {
       }
 
       // Store data in localStorage
-           localStorage.setItem("username", userlogin); //  Use the value from input
+      localStorage.setItem("username", userlogin); //  Use the value from input
       localStorage.setItem("role", data.rolename); //value from API
       console.log("💾 Stored userName in localStorage:", data.userName); 
 

@@ -25,7 +25,7 @@ import About from "./pages/About";
 import JournalPage from './pages/JournalPage';
 //import JournalCalendarPage from './pages/JournalPage';
 import JournalCalendarPage from './pages/JournalCalendarPage';
-
+import KindnessPuzzle from './pages/KindnessPuzzle';
 const queryClient = new QueryClient();
 
 const Login = () => {
@@ -61,6 +61,7 @@ const App = () => (
           <Route path="/rewards" element={<Rewards />} />
           <Route path="/journal" element={<JournalPage />} />
           <Route path="/journal/calendar" element={<JournalCalendarPage />} />
+          <Route path="/games/kindnesspuzzle" element={<KindnessPuzzle />} />
 
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

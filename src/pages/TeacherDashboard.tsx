@@ -6,6 +6,8 @@ import TeacherSidebar from '../components/layout/TeacherSidebar';
 import { useNavigate } from 'react-router-dom';
 import StudentJournalFeed from "@/components/StudentJournalFeed";
 import { useStudentJournalFeed } from "@/hooks/useStudentJournalFeed";
+import UploadModal from "@/components/UploadPrintableModal";
+
 
 
 interface ClassGroup {
@@ -21,21 +23,60 @@ const TeacherDashboard: React.FC = () => {
   const [classes, setClasses] = useState<ClassGroup[]>([]);
   const navigate = useNavigate();
   const { journalFeed, loading } = useStudentJournalFeed();
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const userName = localStorage.getItem('username');
+
+  // useEffect(() => {
+  //   const fetchClasses = async () => {
+  //     try {
+  //       const response = await fetch('https://localhost:44361/api/classgroups');
+  //       const data = await response.json();
+  //       setClasses(data);
+  //     } catch (error) {
+  //       console.error('Failed to fetch class groups:', error);
+  //     }
+  //   };
+
+  //   fetchClasses();
+  // }, []);
 
   useEffect(() => {
-    const fetchClasses = async () => {
+    const fetchInitialData = async () => {
+      // 1. Fetch class groups
       try {
-        const response = await fetch('https://localhost:44361/api/classgroups');
-        const data = await response.json();
-        setClasses(data);
+        const classGroupResponse = await fetch('https://localhost:44361/api/classgroups');
+        const classData = await classGroupResponse.json();
+        setClasses(classData);
       } catch (error) {
         console.error('Failed to fetch class groups:', error);
       }
+  
+      // 2. Fetch teacherId based on username
+      const username = localStorage.getItem("username");
+  
+      if (!username) {
+        console.error("Username not found in localStorage.");
+        return;
+      }
+  
+      try {
+        const teacherRes = await fetch(`https://localhost:44361/api/Teacher/get-teacher-id/${username}`);
+        const teacherData = await teacherRes.json();
+  
+        if (teacherData.teacherId) {
+          console.log("Fetched teacherId:", teacherData.teacherId);
+          localStorage.setItem("teacherId", teacherData.teacherId);
+        } else {
+          console.warn("Teacher ID not returned from API:", teacherData);
+        }
+      } catch (error) {
+        console.error("Failed to fetch teacherId:", error);
+      }
     };
-
-    fetchClasses();
+  
+    fetchInitialData();
   }, []);
-
+  
   return (
     <div className="flex h-screen">
       <TeacherSidebar />
@@ -117,7 +158,17 @@ const TeacherDashboard: React.FC = () => {
               <Card>
                 <CardContent className="p-4 space-y-2">
                   <p><a href="/resources/tips" className="text-blue-600 hover:underline">💡 Daily Kindness Tips</a></p>
-                  <p><a href="/resources/printables" className="text-blue-600 hover:underline">📄 Printable Materials</a></p>
+                  {/* <p><a href="/resources/printables" className="text-blue-600 hover:underline">📄 Printable Materials</a></p> */}
+                  <p>        <button
+          onClick={() => setShowUploadModal(true)}
+          className="text-blue-600 hover:underline"
+        >
+          📄 Printable Materials
+        </button></p>
+        <UploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+      />
                   <p><a href="/resources/kindness101" className="text-blue-600 hover:underline">📖 Kindness 101</a></p>
                 </CardContent>
               </Card>

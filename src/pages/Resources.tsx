@@ -3,6 +3,9 @@ import Footer from '@/components/layout/Footer';
 import React, { useState } from "react";
 import KindnessJournalDashboard from "@/components/KindnessJournalDashboard";
 import { useStudentId } from "@/hooks/useStudentId";
+import PrintableResources from "@/components/PrintableResource";
+import LearnAboutKindness from "@/components/LearnAboutKindness";
+import KindnessTips from '@/components/KindnessTips';
 
 const Dashboard: React.FC = () => {
   const [selectedSection, setSelectedSection] = useState(null);
@@ -10,21 +13,13 @@ const Dashboard: React.FC = () => {
 
   const sections = [
     {
-      id: "kindness101",
-      title: "Kindness 101",
+      id: "Learn About Kindness",
+      title: "Learn About Kindness",
       icon: "💖",
-      description: "Intro to kindness & why it matters",
+      description: "A kindness adventure just for you!",
       content: (
         <div>
-          <p className="text-gray-700">Kindness 101 is an introduction to why being kind matters. Learn how small acts of kindness can make a big impact on the world!</p>
-          <a
-            href="/pdfs/kindness101.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-red-500 underline block mt-2 font-semibold"
-          >
-            📄 Download PDF
-          </a>
+            <LearnAboutKindness />
         </div>
       )
     },
@@ -35,11 +30,12 @@ const Dashboard: React.FC = () => {
       description: "Simple, everyday ways to be kind",
       content: (
         <div>
-          <p className="text-gray-700">Here are easy kindness tips you can use every day to brighten someone's day! A smile, a kind word, or helping someone in need.</p>
+          {/* <p className="text-gray-700">Here are easy kindness tips you can use every day to brighten someone's day! A smile, a kind word, or helping someone in need.</p>
           <div className="grid grid-cols-2 gap-4 mt-4">
             <img src="/images/kindness1.jpg" alt="Kindness Tip 1" className="rounded-lg shadow-md border border-yellow-300" />
             <img src="/images/kindness2.jpg" alt="Kindness Tip 2" className="rounded-lg shadow-md border border-yellow-300" />
-          </div>
+          </div> */}
+          <KindnessTips />
         </div>
       )
     },
@@ -48,15 +44,23 @@ const Dashboard: React.FC = () => {
       title: "Printable Resources",
       icon: "📝",
       description: "Worksheets, coloring pages & journals",
-      content: (
+       content: (
         <div>
-          <p className="text-gray-700">Download and print worksheets, coloring pages, and journals to reflect on kindness and improve emotional well-being.</p>
-          <ul className="mt-2 list-disc pl-5 text-red-500">
-            <li><a href="/pdfs/worksheet1.pdf" target="_blank" rel="noopener noreferrer" className="font-semibold">🖍 Coloring Page 1</a></li>
-            <li><a href="/pdfs/journal.pdf" target="_blank" rel="noopener noreferrer" className="font-semibold">📖 Kindness Journal</a></li>
-          </ul>
+          <p className="text-gray-700 mb-4">
+          Gear up for your kindness quest! 🕵️‍♀️🧠 Print out exciting activities, inspiring journals, creative coloring pages, and more! Each printable is your secret tool to spread joy, show empathy, and become a true Kindness Hero at home, in school, or wherever you go! 🦸‍♂️🌍💖
+          </p>
+          <PrintableResources />
         </div>
       )
+       //(
+      //   <div>
+      //     <p className="text-gray-700">Download and print worksheets, coloring pages, and journals to reflect on kindness and improve emotional well-being.</p>
+      //     <ul className="mt-2 list-disc pl-5 text-red-500">
+      //       <li><a href="/pdfs/worksheet1.pdf" target="_blank" rel="noopener noreferrer" className="font-semibold">🖍 Coloring Page 1</a></li>
+      //       <li><a href="/pdfs/journal.pdf" target="_blank" rel="noopener noreferrer" className="font-semibold">📖 Kindness Journal</a></li>
+      //     </ul>
+      //   </div>
+      // )
     },
     {
       id: "videosAnimations",

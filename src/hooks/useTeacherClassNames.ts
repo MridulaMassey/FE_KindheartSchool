@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 export const useTeacherClassNames = () => {
   const [classGroupNames, setClassGroupNames] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-
+  
   useEffect(() => {
     const fetchClassNames = async () => {
       try {
@@ -13,6 +13,7 @@ export const useTeacherClassNames = () => {
         const teacherRes = await fetch(`https://localhost:44361/api/Teacher/get-teacher-id/${username}`);
         const teacherData = await teacherRes.json();
         const teacherId = teacherData.teacherId;
+        localStorage.setItem("teacherId", teacherId);
 
         const classRes = await fetch(`https://localhost:44361/api/classgroups/teacher-load/${teacherId}`);
         const classData = await classRes.json();
