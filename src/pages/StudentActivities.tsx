@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Header from '@/components/layout/Header';
-import { useStudentActivities } from "@/hooks/useStudentActivities";
+import Footer from '@/components/layout/Footer';
+import { toast } from "@/hooks/use-toast";
 
 interface Activity {
   activityId: string;
@@ -17,17 +18,33 @@ interface Activity {
 }
 
 const StudentActivities: React.FC = () => {
- // const [activities, setActivities] = useState<Activity[]>([]);
- // const [username, setUsername] = useState<string>("");
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [username, setUsername] = useState<string>("");
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [studentcomment, setStudentComment] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isResubmitting, setIsResubmitting] = useState(false);
 
-  const { activities, username, getUpcomingActivities, refreshActivities } = useStudentActivities();
 
-   const handleActivitySubmit = async () => {
+  useEffect(() => {
+    const storedUsername = localStorage.getItem("username") || "";
+    setUsername(storedUsername);
+
+    if (storedUsername) {
+      fetch(`https://localhost:44361/api/student/${storedUsername}/activities-with-submission`)
+        .then(res => res.json())
+        .then(data => setActivities(data))
+        .catch(err => console.error("Failed to fetch activities", err));
+    }
+  }, []);
+
+  const getUpcomingActivities = () => {
+    const now = new Date();
+    return activities.filter(a => new Date(a.dueDate) > now);
+  };
+
+  const handleActivitySubmit = async () => {
     if (!file || !selectedActivity) return alert("Please upload a file");
   
     setIsSubmitting(true);
@@ -36,48 +53,60 @@ const StudentActivities: React.FC = () => {
     formData.append("file", file);
   
     try {
+      // Upload file
+      const formData = new FormData();
+      formData.append("file", file);
       const fileRes = await fetch("https://localhost:44361/api/upload", {
         method: "POST",
         body: formData
       });
   
+      if (!fileRes.ok) throw new Error("File upload failed");
       const { downloadUrl } = await fileRes.json();
-      const fileUrl = downloadUrl;
   
+      // Get student ID
       const response = await fetch(`https://localhost:44361/api/Student/get-student-id/${username}`);
-      const data = await response.json();
-      const studentId = data.studentId;  
+      if (!response.ok) throw new Error("Failed to get student ID");
+      const { studentId } = await response.json();
   
-      const payload = {
-        activityId: selectedActivity.activityId,
-        studentId,
-        pdfUrl: fileUrl,
-        studentComment: studentcomment
-      };
-  
+      // Submit activity
       const endpoint = isResubmitting
         ? "https://localhost:44361/api/Submissions/resubmit"
         : "https://localhost:44361/api/Submissions/submit";
   
-      await fetch(endpoint, {
+      const submitRes = await fetch(endpoint, {
         method: isResubmitting ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({
+          activityId: selectedActivity.activityId,
+          studentId,
+          pdfUrl: downloadUrl,
+          studentComment: studentcomment
+        })
       });
   
-      alert(isResubmitting ? "Resubmitted successfully!" : "Submitted successfully!");
+      if (!submitRes.ok) throw new Error("Submission failed");
   
-      // Reset modal and refresh data
+      // Only if all previous requests were successful:
+      
+      // 1. Fetch updated activities
+      const activitiesRes = await fetch(`https://localhost:44361/api/student/${username}/activities-with-submission`);
+      if (!activitiesRes.ok) throw new Error("Failed to refresh activities");
+      const updatedActivities = await activitiesRes.json();
+      
+      // 2. Update state and show success message
+      setActivities(updatedActivities);
+
+      alert(isResubmitting ? "Resubmitted successfully!" : "Submitted successfully!");
+      // 3. Reset form state
       setSelectedActivity(null);
-      setIsSubmitting(false);
       setFile(null);
       setStudentComment("");
-
-      await refreshActivities();
-
-    } catch (err) {
-      console.error("Submission error:", err);
-      alert("Something went wrong. Please try again.");
+      
+    } catch (error) {
+      console.error("Submission error:", error);
+      // toast.error("Failed to submit activity. Please try again.");
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -107,40 +136,45 @@ const StudentActivities: React.FC = () => {
                   </div>
 
                   <div className="mt-2">
-                  {activity.isSubmitted ? (
-                        <div className="text-green-700 text-sm">
-                          ✅ Submitted on {new Date(activity.submissionDate || "").toLocaleDateString()}
-                          {activity.grade !== null && <p>📊 Grade: <strong>{activity.grade}</strong></p>}
-                          {activity.studentcomment && <p>📝 Comment: <em>{activity.studentcomment}</em></p>}
+                    {activity.isSubmitted ? (
+                      <div className="text-green-700 text-sm">
+                        ✅ Submitted on {new Date(activity.submissionDate || "").toLocaleDateString()}
+                        {activity.grade !== null && <p>📊 Grade: <strong>{activity.grade}</strong></p>}
+                        {activity.feedback && (
+                          <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                            <p className="font-semibold text-gray-700">🗣️ Teacher's Feedback:</p>
+                            <p className="text-gray-600 mt-1 italic">{activity.feedback}</p>
+                          </div>
+                        )}
+                        {activity.studentcomment && <p>📝 Your Comment: <em>{activity.studentcomment}</em></p>}
 
-                          {/* ✅ Show resubmit if still before due date */}
-                          {new Date(activity.dueDate) >= new Date() && (
-                            <button
-                              className="mt-2 text-blue-600 underline"
-                              onClick={() => {
-                                setSelectedActivity(activity);
-                                setIsResubmitting(true);
-                              }}
-                            >
-                              🔁 Resubmit Activity
-                            </button>
-                          )}
-                        </div>
-                      ) : (
-                        <>
-                          <p className="text-red-600 text-sm">🚨 Not submitted yet</p>
+                        {/* Only show resubmit if there's no feedback and it's before due date */}
+                        {!activity.feedback && new Date(activity.dueDate) >= new Date() && (
                           <button
                             className="mt-2 text-blue-600 underline"
                             onClick={() => {
                               setSelectedActivity(activity);
-                              setIsResubmitting(false);
+                              setIsResubmitting(true);
                             }}
                           >
-                            ✏️ Submit This Activity
+                            🔁 Resubmit Activity
                           </button>
-                        </>
-                      )}
-
+                        )}
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-red-600 text-sm">🚨 Not submitted yet</p>
+                        <button
+                          className="mt-2 text-blue-600 underline"
+                          onClick={() => {
+                            setSelectedActivity(activity);
+                            setIsResubmitting(false);
+                          }}
+                        >
+                          ✏️ Submit This Activity
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ))
@@ -191,23 +225,15 @@ const StudentActivities: React.FC = () => {
               />
             </div>
 
-           <button
-            onClick={handleActivitySubmit}
-            className={`mt-4 px-6 py-2 rounded-2xl shadow-md transition duration-300 ease-in-out ${
-              isSubmitting
-                ? "bg-yellow-300 text-gray-600 cursor-not-allowed"
-                : "bg-yellow-400 hover:bg-yellow-500 text-black"
-            }`}
-  disabled={isSubmitting}
->
-  {isSubmitting
-    ? isResubmitting
-      ? "Resubmitting..."
-      : "Submitting..."
-    : isResubmitting
-    ? "Resubmit Activity"
-    : "Submit Activity"}
-</button>
+            <button
+              onClick={handleActivitySubmit}
+              className="mt-4 bg-aqua-600 text-black px-4 py-2 rounded hover:bg-aqua-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting
+                ? (isResubmitting ? "Resubmitting..." : "Submitting...")
+                : (isResubmitting ? "Resubmit Activity" : "Submit Activity")}
+            </button>
           </div>
         </div>
       )}

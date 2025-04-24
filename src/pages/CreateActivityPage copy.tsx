@@ -145,7 +145,7 @@ const CreateActivity = () => {
     description: "",
     dueDate: undefined,
     classGroupId: "",
-    teacherId: "41E8083D-04E1-4421-1FAB-08DD7EDEE8F0", // Default teacher ID
+    teacherId: "F7400196-CDEB-49ED-11BA-08DD64CD7D35", // Default teacher ID
     activityName: "",
     subjectId: "", // Default empty subject ID
   };

@@ -291,7 +291,8 @@ const ActivitiesPaginated = () => {
                       key={activity.id}
                       className="activity-card overflow-hidden hover:border-primary/40 transition-all duration-300"
                       //navigate(`/studentassignmentdetails/${activity.id}`);
-                      onClick={() => navigate(`/studentassignmentdetails/${activity.activityId}`)}
+                      onClick={() => navigate(`/classgroupsubjectsactivitytudentview/${activity.activityId}`)}
+
                     >
                       <CardContent className="p-6 grid gap-4">
                         <div className="flex flex-col">
@@ -346,7 +347,7 @@ const ActivitiesPaginated = () => {
                               className="self-end text-primary"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                navigate(`/studentassignmentdetails/${activity.activityId}`);
+                                navigate(`/classgroupsubjectsactivitytudentview/${activity.activityId}`);
                               }}
                             >
                               View Details
